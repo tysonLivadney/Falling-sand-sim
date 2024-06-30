@@ -7,8 +7,8 @@ import java.awt.Graphics2D;
 import java.util.Random;
 
 public class Brush {
-    static int radius = 50; // pixels radius
-    static float density = .1f;
+    static int radius = 30; // pixels radius
+    static float density = .01f;
     static int pixelsToMake = (int) (Math.PI * radius * radius * density);
     Sand toPaint;
     static PixelType currentBrush = PixelType.SAND;

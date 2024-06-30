@@ -2,54 +2,64 @@ package Sand;
 
 import java.awt.Color;
 
-public class Water extends Sand{
-    int cellsSideways;
+public class Water extends Sand {
+    int cellsSideways = 5;
+
     public Water(int gravity, Color color, int x, int y, Vector2D velocity) {
         super(gravity, color, x, y, velocity);
-        //this.cellsSideways = cellsSideways;
     }
+
     @Override
     public void update() {
         if (prevFrame == frameCount) return; // Ensure it updates only once per frame
         prevFrame = frameCount;
 
-        // Apply gravity
-        if (position.y + velocity.y + gravity < gridHeight && Grid.grid[position.x][position.y + velocity.y + gravity] == null) {
-            velocity.setY(velocity.getY() + gravity); // Accelerate downwards
-        } 
-        else {
-            velocity.setY(0); // Stop vertical movement
+        // Try to fall down
+        if (position.y + gravity < gridHeight && Grid.grid[position.x][position.y + gravity] == null) {
+            movePixel(position.x, position.y, position.x, position.y + gravity);
+        } else {
+            // Try to move diagonally
             boolean moveRightFirst = Math.random() > 0.5;
             if (moveRightFirst) {
                 if (position.x + 1 < gridWidth && position.y + 1 < gridHeight && Grid.grid[position.x + 1][position.y + 1] == null) {
-                    velocity.set(1, 1);
+                    movePixel(position.x, position.y, position.x + 1, position.y + 1);
                 } else if (position.x - 1 >= 0 && position.y + 1 < gridHeight && Grid.grid[position.x - 1][position.y + 1] == null) {
-                    velocity.set(-1, 1);
+                    movePixel(position.x, position.y, position.x - 1, position.y + 1);
                 } else {
-                    velocity.setX(0);
+                    moveSideways();
                 }
             } else {
                 if (position.x - 1 >= 0 && position.y + 1 < gridHeight && Grid.grid[position.x - 1][position.y + 1] == null) {
-                    velocity.set(-1, 1);
+                    movePixel(position.x, position.y, position.x - 1, position.y + 1);
                 } else if (position.x + 1 < gridWidth && position.y + 1 < gridHeight && Grid.grid[position.x + 1][position.y + 1] == null) {
-                    velocity.set(1, 1);
+                    movePixel(position.x, position.y, position.x + 1, position.y + 1);
                 } else {
-                    velocity.setX(0);
+                    moveSideways();
                 }
             }
         }
-        
+    }
 
-        // Calculate new position based on velocity
-        Vector2D newPos = toMove(velocity.getX(), velocity.getY());
-        int newX = position.getX() + newPos.getX();
-        int newY = position.getY() + newPos.getY();
-        // Ensure new position is within bounds
-        if (Grid.grid[newX][newY] == null) {      
-            movePixel(position.x, position.y, newX, newY);
-        } 
-        else if (position.y + 1 < gridHeight && Grid.grid[position.x][position.y + 1] == null)
-            movePixel(position.x, position.y, position.x, position.y + 1);
-        
+    private void moveSideways() {
+        for (int i = 1; i <= cellsSideways; i++) {
+            // Try to move right
+            if (position.x + i < gridWidth && Grid.grid[position.x + i][position.y] == null) {
+                movePixel(position.x, position.y, position.x + i, position.y);
+                return;
+            }
+            // Try to move left
+            if (position.x - i >= 0 && Grid.grid[position.x - i][position.y] == null) {
+                movePixel(position.x, position.y, position.x - i, position.y);
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void movePixel(int oldX, int oldY, int newX, int newY) {
+        Grid.grid[oldX][oldY] = null;
+        Grid.grid[newX][newY] = this;
+        this.position.setX(newX);
+        this.position.setY(newY);
     }
 }
